@@ -2,15 +2,17 @@
 import { useGLTF } from '@react-three/drei';
 
 const TokenOne = ({ position }: { position: [number, number, number] }) => {
-  const pawnModel = useGLTF('/tokens/Stan.glb');
+  const model = useGLTF('/tokens/Stan.glb');
 
   return (
     <primitive 
-      object={pawnModel.scene} 
-      position={position} 
-      scale={[0.005, 0.005, 0.005]}  // Very small scale to fit within a tile
+      object={model.scene} 
+      position={[position[0], position[1] + 0.15, position[2]]}
+      scale={[0.6, 0.6, 0.6]}
     />
   );
 };
+
+useGLTF.preload('/tokens/Stan.glb');
 
 export default TokenOne;

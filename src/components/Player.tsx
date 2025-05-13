@@ -1,16 +1,30 @@
 import { useSpring, animated } from '@react-spring/three';
 import TokenOne from './playertokens/TokenOne';
+import TokenTwo from './playertokens/TokenTwo';
+import { useEffect } from 'react';
 
-const Player = ({ position }: { position: [number, number, number] }) => {
-  // Create spring animation for smooth movement
-  const { position: animatedPosition } = useSpring({
+const Player = ({ position, token }: { position: [number, number, number]; token: string }) => {
+  const [springs, api] = useSpring(() => ({
     position: position,
-    config: { mass: 1, tension: 120, friction: 14 }, // Adjust these values for different movement feels
-    delay: 300 // Small delay to start moving after dice roll
-  });
+    config: { mass: 1, tension: 170, friction: 26 }
+  }));
+
+  useEffect(() => {
+    console.log(`Player rendering with token type: ${token}`);
+    api.start({ position });
+  }, [position, api, token]);
+
+  // Explicitly render different components based on token type
+  if (token === 'TokenTwo') {
+    return (
+      <animated.group position={springs.position}>
+        <TokenTwo position={[0, 0.15, 0]} />
+      </animated.group>
+    );
+  }
 
   return (
-    <animated.group position={animatedPosition}>
+    <animated.group position={springs.position}>
       <TokenOne position={[0, 0.15, 0]} />
     </animated.group>
   );

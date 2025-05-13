@@ -105,7 +105,7 @@ const Tile = ({ position, type, id, special }: { position: any; type: TileType; 
 };
 
 const IsometricBoard = () => {
-  const position = usePlayerStore((state) => state.position);
+  const players = usePlayerStore((state) => state.players);
   const tiles: JSX.Element[] = [];
   const [showSurpriseModal, setShowSurpriseModal] = useState(false);
 
@@ -125,13 +125,10 @@ const IsometricBoard = () => {
     handleEffect(effect);
   };
 
-  // Create a full 10x10 grid
+  // Create a full grid
   for (let row = 0; row < mapData.height; row++) {
     for (let col = 0; col < mapData.width; col++) {
       const tile = mapData.tiles.find(t => t.path[0] === col && t.path[1] === row);
-      if (tile?.type === 'tree') {
-        console.log('Found tree at:', col, row);
-      }
       const type = tile ? tile.type : mapData.defaultTile;
       const id = tile?.id;
       tiles.push(<Tile key={`${col}-${row}`} position={[col, 0, row]} type={type as TileType} id={id} special={tile?.special} />);
@@ -159,7 +156,13 @@ const IsometricBoard = () => {
         </RoundedBox>
 
         {tiles}
-        <Player position={position} />
+        {players.map(player => (
+          <Player 
+            key={player.id} 
+            position={player.position} 
+            token={player.token}
+          />
+        ))}
         <OrbitControls 
           minDistance={5} 
           maxDistance={50} 
@@ -171,6 +174,28 @@ const IsometricBoard = () => {
           target={[mapData.width / 2, 0, mapData.height / 2]}
         />
       </Canvas>
+
+      <div style={{
+        position: 'fixed',
+        top: '20px',
+        left: '20px',
+        backgroundColor: 'white',
+        padding: '10px',
+        borderRadius: '5px',
+        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+        zIndex: 1000
+      }}>
+        <h3>Current Turn:</h3>
+        {players.map(player => (
+          <div key={player.id} style={{
+            padding: '5px',
+            backgroundColor: player.isActive ? '#e0ffe0' : 'transparent',
+            borderRadius: '3px'
+          }}>
+            {player.name} ({player.isActive ? 'Active' : 'Waiting'})
+          </div>
+        ))}
+      </div>
 
       <SurpriseModal 
         isOpen={showSurpriseModal}

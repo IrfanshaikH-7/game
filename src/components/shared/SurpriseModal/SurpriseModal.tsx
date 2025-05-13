@@ -3,6 +3,8 @@ import './SurpriseModal.css';
 import { benefits } from '../../../contants/surprises/benefits';
 import { blessings } from '../../../contants/surprises/blessing';
 import { traps } from '../../../contants/surprises/traps';
+import { usePlayerStore } from '../../../store/usePlayerStore';
+import mapData from '../../../contants/maps/grassland.json';
 
 interface SurpriseModalProps {
   isOpen: boolean;
@@ -14,6 +16,14 @@ const SurpriseModal = ({ isOpen, onClose, onEffectComplete }: SurpriseModalProps
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [surprise, setSurprise] = useState<any>(null);
+
+  const checkForSurpriseTile = () => {
+    const activePlayer = usePlayerStore.getState().getActivePlayer();
+    if (!activePlayer) return false;
+    
+    const currentTile = mapData.tiles.find(t => t.id === activePlayer.currentTile);
+    return currentTile?.special === 'surprise';
+  };
 
   const revealCard = (cardIndex: number) => {
     if (selectedCard !== null) return;
@@ -48,6 +58,7 @@ const SurpriseModal = ({ isOpen, onClose, onEffectComplete }: SurpriseModalProps
       // Wait 3 seconds before executing effect
       setTimeout(() => {
         onEffectComplete(selectedSurprise.effect);
+        // Close modal after effect starts
         onClose();
         // Reset state for next time
         setSelectedCard(null);

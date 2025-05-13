@@ -3,11 +3,12 @@ import mapData from '../maps/grassland.json';
 
 // Common movement function for all movement effects
 const movePlayer = (spaces: number) => {
-  const { currentTile, updatePosition, isMoving } = usePlayerStore.getState();
+  const store = usePlayerStore.getState();
+  const activePlayer = store.getActivePlayer();
   
-  if (isMoving) return;
+  if (!activePlayer || store.isMoving) return;
   
-  const targetTile = currentTile + spaces;
+  const targetTile = activePlayer.currentTile + spaces;
   const maxTileId = Math.max(...mapData.tiles.filter(t => t.type === 'path' && t.id).map(t => t.id || 0));
   
   // Validate move is within bounds
@@ -20,29 +21,37 @@ const movePlayer = (spaces: number) => {
   
   // Generate sequence of tiles to move through
   const sequence = spaces > 0
-    ? Array.from({ length: spaces }, (_, i) => currentTile + i + 1)
-    : Array.from({ length: Math.abs(spaces) }, (_, i) => currentTile - i - 1);
+    ? Array.from({ length: spaces }, (_, i) => activePlayer.currentTile + i + 1)
+    : Array.from({ length: Math.abs(spaces) }, (_, i) => activePlayer.currentTile - i - 1);
 
   let step = 0;
   const moveNext = () => {
     if (step < sequence.length) {
       const nextTileNumber = sequence[step];
-      updatePosition(nextTileNumber);
-      
-      // Check for surprise tile on the final step
-      if (step === sequence.length - 1) {
-        const currentTile = mapData.tiles.find(t => t.id === nextTileNumber);
-        if (currentTile?.special === 'surprise') {
-          setTimeout(() => {
-            document.dispatchEvent(new CustomEvent('showSurpriseModal'));
-          }, 1500);
-        }
-      }
+      store.updatePosition(activePlayer.id, nextTileNumber);
       
       step++;
-      setTimeout(moveNext, 500);
-    } else {
-      usePlayerStore.setState({ isMoving: false });
+      
+      if (step === sequence.length) {
+        // Check for surprises only on forward movement
+        if (spaces > 0) {
+          const landedTile = mapData.tiles.find(t => t.id === nextTileNumber);
+          if (landedTile?.special === 'surprise') {
+            setTimeout(() => {
+              usePlayerStore.setState({ isMoving: false });
+              document.dispatchEvent(new CustomEvent('showSurpriseModal'));
+            }, 500);
+            return; // Don't change turns yet, let the new surprise handle it
+          }
+        }
+        // For backward movement or no surprise, end turn
+        setTimeout(() => {
+          usePlayerStore.setState({ isMoving: false });
+          store.nextTurn();
+        }, 500);
+      } else {
+        setTimeout(moveNext, 500);
+      }
     }
   };
 
@@ -51,10 +60,12 @@ const movePlayer = (spaces: number) => {
 
 // Movement effects
 const moveBack3 = () => {
+  console.log("Moving back 3 spaces");
   movePlayer(-3);
 };
 
 const moveForward4 = () => {
+  console.log("Moving forward 4 spaces");
   movePlayer(4);
 };
 
@@ -67,10 +78,12 @@ export const effectHandlers: { [key: string]: () => void } = {
 
 // Function to handle any effect
 export const handleEffect = (effect: string): boolean => {
+  console.log("Handling effect:", effect);
   const handler = effectHandlers[effect];
   if (handler) {
     handler();
     return true;
   }
+  console.log("No handler found for effect:", effect);
   return false;
 };

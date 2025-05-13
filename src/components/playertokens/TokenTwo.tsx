@@ -1,16 +1,18 @@
-// src/components/shared/TokenOne.tsx
+// src/components/shared/TokenTwo.tsx
 import { useGLTF } from '@react-three/drei';
 
 const TokenTwo = ({ position }: { position: [number, number, number] }) => {
-  const pawnModel = useGLTF('/tokens/Stan.glb');
+  const model = useGLTF('/tokens/mons.glb');
 
   return (
     <primitive 
-      object={pawnModel.scene} 
-      position={position} 
-      scale={[0.005, 0.005, 0.005]}  // Very small scale to fit within a tile
+      object={model.scene} 
+      position={[position[0], position[1] + 0.15, position[2]]}
+      scale={[0.6, 0.6, 0.6]}
     />
   );
 };
+
+useGLTF.preload('/tokens/mons.glb');
 
 export default TokenTwo;

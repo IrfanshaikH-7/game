@@ -11,55 +11,84 @@ interface DiceStore {
 export const useStore = create<DiceStore>((set, get) => ({
   diceValue: 1,
   rollDice: () => {
-    const newValue = Math.floor(Math.random() * 6) + 1; // Random number between 1 and 6
-    set({ diceValue: newValue }); // Update the state
-    return newValue; // Return the new value
+    const newValue = Math.floor(Math.random() * 6) + 1;
+    set({ diceValue: newValue });
+    return newValue;
   },
   movePlayer: () => {
-    const { currentTile, updatePosition, isMoving } = usePlayerStore.getState();
+    const playerStore = usePlayerStore.getState();
+    const activePlayer = playerStore.getActivePlayer();
     const diceValue = get().diceValue;
     
-    // Calculate new tile number
-    const nextTile = currentTile + diceValue;
+    if (!activePlayer) {
+      console.log("No active player found");
+      return;
+    }
+
+    console.log("Moving player:", activePlayer.id, "from tile", activePlayer.currentTile, "by", diceValue);
     
-    // Check if next tile exists and is within bounds (max 45)
+    // Calculate new tile number
+    const nextTile = activePlayer.currentTile + diceValue;
+    
+    // Check if next tile exists and is within bounds
     const maxTileId = Math.max(...mapData.tiles.filter(t => t.type === 'path' && t.id).map(t => t.id || 0));
-    if (nextTile <= maxTileId && !isMoving) {
+    
+    if (nextTile <= maxTileId && !playerStore.isMoving) {
       usePlayerStore.setState({ isMoving: true });
       
       // Generate sequence of tiles from current to target
       const sequence = Array.from(
-        { length: nextTile - currentTile },
-        (_, i) => currentTile + i + 1
+        { length: nextTile - activePlayer.currentTile },
+        (_, i) => activePlayer.currentTile + i + 1
       );
+
+      console.log("Movement sequence:", sequence);
 
       let step = 0;
       const moveNext = () => {
         if (step < sequence.length) {
           const nextTileNumber = sequence[step];
-          updatePosition(nextTileNumber);
+          console.log("Moving to tile:", nextTileNumber);
+          playerStore.updatePosition(activePlayer.id, nextTileNumber);
           
-          // Only check for surprise on the final step
-          if (step === sequence.length - 1) {
+          step++;
+          
+          if (step < sequence.length) {
+            setTimeout(moveNext, 300);
+          } else {
+            // On last step
             const currentTile = mapData.tiles.find(t => t.id === nextTileNumber);
             if (currentTile?.special === 'surprise') {
               setTimeout(() => {
-                document.dispatchEvent(new CustomEvent('showSurpriseModal'));
-              }, 1500);
+                document.dispatchEvent(new CustomEvent('showSurpriseModal', {
+                  detail: { playerId: activePlayer.id }
+                }));
+              }, 300);
+              // Turn will be changed after surprise effect completes
+              usePlayerStore.setState({ isMoving: false });
+            } else {
+              // If no surprise, change turn normally
+              setTimeout(() => {
+                usePlayerStore.setState({ isMoving: false });
+                playerStore.nextTurn();
+              }, 500);
             }
           }
-          
-          step++;
-          setTimeout(moveNext, 500);
-        } else {
-          usePlayerStore.setState({ isMoving: false });
         }
       };
 
       moveNext();
     } else {
-      // Handle case when dice roll would move player beyond the last tile
-      console.log("Can't move that far!");
+      if (nextTile > maxTileId) {
+        console.log("Attempted to move beyond max tile:", maxTileId);
+      }
+      if (playerStore.isMoving) {
+        console.log("Player is already moving");
+      }
+      // Don't change turns if movement is blocked due to isMoving
+      if (!playerStore.isMoving) {
+        playerStore.nextTurn();
+      }
     }
   }
 }));
