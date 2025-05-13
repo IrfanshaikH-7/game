@@ -1,0 +1,81 @@
+.surprise-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.surprise-modal {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.cards-container {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.mystery-card {
+  width: 150px;
+  height: 200px;
+  background: #f0f0f0;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.3s;
+}
+
+.mystery-card:hover {
+  transform: translateY(-5px);
+}
+
+.card-back {
+  font-size: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  background: linear-gradient(45deg, #ffd700, #ffa500);
+}
+
+.scratched {
+  animation: scratch 1s forwards;
+}
+
+.revealed .surprise-content {
+  opacity: 1;
+}
+
+.surprise-content {
+  opacity: 0;
+  transition: opacity 0.5s;
+  padding: 1rem;
+}
+
+.surprise-content.trap {
+  background: #ffcdd2;
+}
+
+.surprise-content.blessing {
+  background: #c8e6c9;
+}
+
+.surprise-content.benefit {
+  background: #bbdefb;
+}
+
+@keyframes scratch {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  75% { transform: rotate(-5deg); }
+  100% { transform: rotate(0deg); }
+}
