@@ -1,81 +1,97 @@
-.surprise-modal-overlay {
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
-.surprise-modal {
-  background: white;
+.modal-content {
+  background-color: white;
   padding: 2rem;
   border-radius: 10px;
+  max-width: 500px;
+  width: 90%;
   text-align: center;
 }
 
-.cards-container {
+.card-selection {
+  margin: 2rem 0;
+}
+
+.cards {
   display: flex;
+  justify-content: center;
   gap: 2rem;
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
-.mystery-card {
-  width: 150px;
-  height: 200px;
-  background: #f0f0f0;
+.card {
+  width: 100px;
+  height: 150px;
+  background: linear-gradient(45deg, #1a1a1a, #4a4a4a);
   border-radius: 10px;
-  cursor: pointer;
-  position: relative;
-  transition: transform 0.3s;
-}
-
-.mystery-card:hover {
-  transform: translateY(-5px);
-}
-
-.card-back {
-  font-size: 48px;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
-  background: linear-gradient(45deg, #ffd700, #ffa500);
+  font-size: 2rem;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.scratched {
-  animation: scratch 1s forwards;
+.card:hover {
+  transform: translateY(-10px);
 }
 
-.revealed .surprise-content {
-  opacity: 1;
+.card.selected {
+  pointer-events: none;
+  animation: flip 1s forwards;
 }
 
-.surprise-content {
-  opacity: 0;
-  transition: opacity 0.5s;
-  padding: 1rem;
+.surprise-reveal {
+  padding: 2rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin-top: 1rem;
 }
 
-.surprise-content.trap {
-  background: #ffcdd2;
+.surprise-reveal h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
 }
 
-.surprise-content.blessing {
-  background: #c8e6c9;
+.surprise-reveal p {
+  color: #34495e;
+  margin-bottom: 2rem;
 }
 
-.surprise-content.benefit {
-  background: #bbdefb;
+.complete-button {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 5px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-@keyframes scratch {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(5deg); }
-  75% { transform: rotate(-5deg); }
-  100% { transform: rotate(0deg); }
+.complete-button:hover {
+  background-color: #219a52;
+}
+
+@keyframes flip {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(180deg);
+  }
 }

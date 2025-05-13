@@ -1,32 +1,48 @@
-import { useSpring, animated } from '@react-spring/three';
-import TokenOne from './playertokens/TokenOne';
-import TokenTwo from './playertokens/TokenTwo';
-import { useEffect } from 'react';
+import MovingToken from './MovingToken';
+import PlayerIndicator from './PlayerIndicator';
+import { getTokenConfig } from '../contants/tokens/tokenConfig';
 
-const Player = ({ position, token }: { position: [number, number, number]; token: string }) => {
-  const [springs, api] = useSpring(() => ({
-    position: position,
-    config: { mass: 1, tension: 170, friction: 26 }
-  }));
+interface PlayerProps {
+  position: [number, number, number];
+  tokenId: string;
+  color: string;
+  id: string;
+}
 
-  useEffect(() => {
-    console.log(`Player rendering with token type: ${token}`);
-    api.start({ position });
-  }, [position, api, token]);
-
-  // Explicitly render different components based on token type
-  if (token === 'TokenTwo') {
-    return (
-      <animated.group position={springs.position}>
-        <TokenTwo position={[0, 0.15, 0]} />
-      </animated.group>
-    );
+const Player = ({ position, tokenId, color, id }: PlayerProps) => {
+  const tokenConfig = getTokenConfig(tokenId);
+  
+  if (!tokenConfig) {
+    console.error(`Token configuration not found for id: ${tokenId}`);
+    return null;
   }
 
+  // Base position for the token (on the tile)
+  const tokenPos: [number, number, number] = [
+    position[0],
+    position[1], // Use the height from the position prop
+    position[2]
+  ];
+
+  // Calculate indicator position
+  const indicatorPos: [number, number, number] = [
+    position[0],
+    0.2, // Higher above the tile
+    position[2]
+  ];
+
   return (
-    <animated.group position={springs.position}>
-      <TokenOne position={[0, 0.15, 0]} />
-    </animated.group>
+    <>
+      <MovingToken 
+        position={tokenPos}
+        tokenConfig={tokenConfig}
+        playerId={id}
+      />
+      <PlayerIndicator 
+        position={indicatorPos}
+        color={color}
+      />
+    </>
   );
 };
 

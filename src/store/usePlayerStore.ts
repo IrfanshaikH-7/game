@@ -6,7 +6,8 @@ interface Player {
   id: string;
   name: string;
   position: [number, number, number];
-  token: string;
+  tokenId: string;
+  color: string;
   isActive: boolean;
   currentTile: number;
 }
@@ -22,9 +23,13 @@ interface PlayerState {
 
 // Find the starting tile (path with ID 1)
 const startingTile = mapData.tiles.find(tile => tile.type === 'path' && tile.id === 1);
+console.log('Starting tile found:', startingTile);
+
 const startingPosition: [number, number, number] = startingTile 
   ? [startingTile.path[0], 0.15, startingTile.path[1]]
   : [0, 0.15, 0];
+
+console.log('Initial starting position:', startingPosition);
 
 export const usePlayerStore = create<PlayerState>()(
   persist(
@@ -33,27 +38,36 @@ export const usePlayerStore = create<PlayerState>()(
       isMoving: false,
 
       initializePlayers: (players) => {
-        const initializedPlayers = players.map(player => ({
-          ...player,
-          position: [...startingPosition] as [number, number, number],
-          currentTile: 1
-        }));
+        const initializedPlayers = players.map(player => {
+          console.log(`Initializing player ${player.name} with token ${player.tokenId}`);
+          return {
+            ...player,
+            position: [...startingPosition] as [number, number, number],
+            currentTile: 1
+          };
+        });
+        console.log('All initialized players:', initializedPlayers);
         set({ players: initializedPlayers });
       },
 
       updatePosition: (playerId, tileNumber) => {
         const newTile = mapData.tiles.find(tile => tile.id === tileNumber);
         if (newTile) {
+          const newPosition: [number, number, number] = [newTile.path[0], 0.15, newTile.path[1]];
           console.log(`Store: Updating player ${playerId} to tile ${tileNumber}`, {
+            tile: newTile,
             path: newTile.path,
-            newPosition: [newTile.path[0], 0.15, newTile.path[1]]
+            calculatedPosition: newPosition
           });
           
           set(state => {
             const newPlayers = state.players.map(player => {
               if (player.id === playerId) {
-                const newPosition: [number, number, number] = [newTile.path[0], 0.15, newTile.path[1]];
-                console.log(`Store: Player ${player.name} (${player.token}) moving from`, player.position, 'to', newPosition);
+                console.log(`Store: Player ${player.name} (${player.tokenId})`, {
+                  from: player.position,
+                  to: newPosition,
+                  tile: tileNumber
+                });
                 return {
                   ...player,
                   currentTile: tileNumber,
@@ -66,7 +80,7 @@ export const usePlayerStore = create<PlayerState>()(
             return { players: newPlayers };
           });
         } else {
-          console.warn(`Store: Could not find tile ${tileNumber}`);
+          console.warn(`Store: Could not find tile ${tileNumber} in:`, mapData.tiles);
         }
       },
 
@@ -85,7 +99,9 @@ export const usePlayerStore = create<PlayerState>()(
       },
 
       getActivePlayer: () => {
-        return get().players.find(p => p.isActive);
+        const player = get().players.find(p => p.isActive);
+        console.log('Current active player:', player);
+        return player;
       }
     }),
     {

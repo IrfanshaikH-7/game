@@ -160,7 +160,9 @@ const IsometricBoard = () => {
           <Player 
             key={player.id} 
             position={player.position} 
-            token={player.token}
+            tokenId={player.tokenId}
+            color={player.color}
+            id={player.id}
           />
         ))}
         <OrbitControls 
@@ -190,8 +192,17 @@ const IsometricBoard = () => {
           <div key={player.id} style={{
             padding: '5px',
             backgroundColor: player.isActive ? '#e0ffe0' : 'transparent',
-            borderRadius: '3px'
+            borderRadius: '3px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}>
+            <div style={{
+              width: '12px',
+              height: '12px',
+              borderRadius: '50%',
+              backgroundColor: player.color
+            }} />
             {player.name} ({player.isActive ? 'Active' : 'Waiting'})
           </div>
         ))}
